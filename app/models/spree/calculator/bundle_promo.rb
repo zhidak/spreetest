@@ -19,7 +19,7 @@ module Spree
 
     def product_count_in_order(order, product_id)
       order.line_items.each do |item|
-        return item.quantity if item.product.id == product_id
+        return item.quantity if item.product.id == product_id.to_i
       end
       0
     end
