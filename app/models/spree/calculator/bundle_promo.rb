@@ -2,8 +2,7 @@ require_dependency 'spree/calculator'
 
 module Spree
   class Calculator::BundlePromo < Calculator
-    preference :product_a_id, :int, default: 1
-    preference :product_b_id, :int, default: 2
+    preference :promotion_name, :string, default: 'BundlePromotion'
     preference :discount_per_bundle, :decimal, default: 5.00
 
     def self.description
@@ -12,9 +11,12 @@ module Spree
 
     def compute(order)
       throw 'Invalid param encountered (Calculator::BundlePromo#compute)' unless order.is_a?(Spree::Order)
-      product_a_cnt = product_count_in_order(order, preferred_product_a_id)
-      product_b_cnt = product_count_in_order(order, preferred_product_b_id)
-      preferred_discount_per_bundle * [product_a_cnt, product_b_cnt].min
+      
+      bundle_promo = order.promotions.select{|p| p.name == preferred_promotion_name}[0]
+      return 0 unless bundle_promo
+      
+      bundle_product_counts = bundle_promo.products.map{|p| product_count_in_order(order, p.id)}
+      preferred_discount_per_bundle * bundle_product_counts.min
     end
 
     def product_count_in_order(order, product_id)
@@ -25,4 +27,3 @@ module Spree
     end
   end
 end
-
